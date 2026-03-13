@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+   moduleFormat    = "cjs"
+}
+
+generator nestjsDto{
+  provider = "prisma-generator-nestjs-dto"
+  output = "../src/generated/nestjs-dto"
+
+  classValidation = "true"
+  swagger = "true"
+  fileNamingStyle = "camel"
+  exportRelation = "false"
+  createDtoPrefix = "Create"
+  updateDtoPrefix = "Update"
+  entitySuffix = "Entity"
+  usePartialType = "false"
+  usePickType = "true"
+  useOmitType = "true"
+  decoratorValidation = "true"
+  decoratorSwagger = "true"
+  definiteAssignmentAssertion = "true"
+  prettier = "true"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String    @id @default(cuid())
+  phoneNumber String?   @unique
+  fullname    String?
+  isVerified  Boolean   @default(false)
+  password    String?
+
+  username    String?   @unique
+  avatarUrl   String?
+
+  email       String    @unique
+  googleId    String?   @unique
+
+  address     String?
+  gender      String?
+  birthDate   DateTime?
+  role        String[]  @default(["customer"])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  refreshTokens RefreshToken[]
+  accessTokensGoogle AccessTokenGoogle[]
+
+  @@index([username])
+  @@index([googleId])
+  @@index([birthDate])
+  @@index([createdAt])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  typeLogin String    @default("local") // "local" or "google"
+  isRevoked Boolean   @default(false)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model AccessTokenGoogle {
+  id              String    @id @default(cuid())
+  accessToken     String    @unique
+  user            User      @relation(fields: [googleId], references: [googleId])
+  googleId        String
+  isRevoked       Boolean   @default(false)
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
