@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "RefreshToken" ALTER COLUMN "typeLogin" SET DEFAULT 'LOCAL';
+
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT ARRAY['CUSTOMER']::TEXT[];

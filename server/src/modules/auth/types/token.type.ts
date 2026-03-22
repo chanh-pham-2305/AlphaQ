@@ -1,3 +1,5 @@
+import { UserRole } from 'src/global/types/roles.type';
+
 export type Tokens = {
   accessToken: string;
   refreshToken: string;
@@ -5,12 +7,14 @@ export type Tokens = {
 export type JwtPayload = {
   sub: string;
   email: string;
+  role: UserRole[];
 };
 
 export type RefreshTokenInput = {
   userId: string;
   email: string;
   RTId: string;
+  role: UserRole[];
 };
 
 export type ATGoogleInput = {

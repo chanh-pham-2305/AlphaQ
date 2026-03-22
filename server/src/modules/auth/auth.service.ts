@@ -16,6 +16,7 @@ import {
 } from './types/token.type';
 import * as bcrypt from 'bcrypt';
 import {
+  AtUser,
   ChangePasswordInput,
   ForgotPasswordInput,
   GoogleUserInput,
@@ -72,10 +73,10 @@ export class AuthService {
   }
 
   async refreshToken(RTInput: RefreshTokenInput): Promise<Tokens> {
-    const { userId, email, RTId } = RTInput;
+    const { userId, email, RTId, role } = RTInput;
 
-    const newAT = this.generateAccessToken({ id: userId, email });
-    const newRT = await this.generateRefreshToken({ id: userId, email });
+    const newAT = this.generateAccessToken({ id: userId, email, role });
+    const newRT = await this.generateRefreshToken({ id: userId, email, role });
     await this.rotateRefreshToken({ userId, oldRTId: RTId, newRT });
     return {
       accessToken: newAT,
@@ -94,10 +95,12 @@ export class AuthService {
   private generateAccessToken({
     id,
     email,
-  }: Pick<User, 'id' | 'email'>): string {
+    role,
+  }: Pick<User, 'id' | 'email' | 'role'>): string {
     const payload = {
       sub: id,
       email,
+      role,
     };
 
     return this.jwtService.sign(payload, {
@@ -109,10 +112,12 @@ export class AuthService {
   private async generateRefreshToken({
     id,
     email,
-  }: Pick<User, 'id' | 'email'>): Promise<string> {
+    role,
+  }: Pick<User, 'id' | 'email' | 'role'>): Promise<string> {
     const payload = {
       sub: id,
       email,
+      role,
     };
 
     const refreshToken = this.jwtService.sign(payload, {
