@@ -8,6 +8,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { AtStrategy } from './strategies/access-token.strategy';
 import { RtStrategy } from './strategies/refresh-token.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { RolesGuard } from 'src/global/guards/roles.guard';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     AtStrategy,
     RtStrategy,
     GoogleStrategy,
+    RolesGuard,
   ],
 })
 export class AuthModule {}

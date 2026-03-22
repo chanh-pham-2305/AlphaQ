@@ -34,9 +34,16 @@ import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { AtJwtAuthGuard } from './guards/at-jwt-auth.guard';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { SetPasswordDto } from './dtos/set-password.dto';
+import {
+  Authenticated,
+  GuestOnly,
+  Public,
+} from 'src/global/decorators/roles.decorator';
+import { RolesGuard } from 'src/global/guards/roles.guard';
 
 @ApiTags('auth')
 @Controller('auth')
+@UseGuards(AtJwtAuthGuard, RolesGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -45,6 +52,7 @@ export class AuthController {
   @ApiCreatedResponse({ description: 'User registered successfully!' })
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @Post('register')
+  @GuestOnly()
   async register(@Body(new ValidationPipe()) user: RegisterUserDto) {
     const result = await this.authService.register(user);
     return {
@@ -57,6 +65,7 @@ export class AuthController {
   // POST api/auth/login
   @ApiOperation({ summary: 'Login with email and password' })
   @Post('login')
+  @GuestOnly()
   @UseGuards(LocalAuthGuard)
   async loginEmail(
     @Body(new ValidationPipe()) userLogin: LoginLocalUserDto,
@@ -85,11 +94,13 @@ export class AuthController {
   //Google login OAuth2
   @ApiOperation({ summary: 'Login with Google account' })
   @Get('google/login')
+  @GuestOnly()
   @UseGuards(GoogleAuthGuard)
   handleGoogleLogin() {}
 
   @ApiOperation({ summary: 'Handle Google login redirect' })
   @Get('google/redirect')
+  @GuestOnly()
   @UseGuards(GoogleAuthGuard)
   async handleGoogleRedirect(
     @Req() req: RequestWithLocal,
@@ -114,6 +125,7 @@ export class AuthController {
   // POST api/auth/refresh-token
   @ApiOperation({ summary: 'Refresh authentication token' })
   @Post('refresh-token')
+  @Public()
   @UseGuards(RtJWTAuthGuard)
   async refreshToken(@Req() req: RequestWithRt): Promise<SuccessResponse> {
     console.log(req.user);
@@ -131,6 +143,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Reset user password' })
   //UseGuards(AdminGuard)
   @Post('reset-password')
+  @Public()
   async resetPassword(
     @Query('user_id') userId: string,
   ): Promise<SuccessResponse<{ newPassword: string }>> {
@@ -145,6 +158,7 @@ export class AuthController {
   // POST api/auth/forgot-password
   @ApiOperation({ summary: 'Request password reset' })
   @Post('forgot-password')
+  @Public()
   async forgotPassword(
     @Query('user_id') userId: string,
     @Body(new ValidationPipe()) forGotPasswordDto: ForgotPasswordDto,
@@ -165,6 +179,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Change user password' })
   @UseGuards(AtJwtAuthGuard)
   @Post('change-password')
+  @Authenticated()
   async changePassword(
     @Req() req: RequestWithAt,
     @Body(new ValidationPipe()) changePasswordDto: ChangePasswordDto,
@@ -187,6 +202,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Set user password' })
   @UseGuards(AtJwtAuthGuard)
   @Post('set-password')
+  @Authenticated()
   async setPassword(
     @Req() req: RequestWithAt,
     @Body(new ValidationPipe()) setPasswordDto: SetPasswordDto,
@@ -207,6 +223,7 @@ export class AuthController {
   // POST api/auth/verify-email
   @ApiOperation({ summary: 'Verify if email is valid for registration' })
   @Post('verify-email')
+  @Public()
   async verifyEmail(
     @Body('email') email: string,
   ): Promise<SuccessResponse<{ userId: string }>> {
@@ -222,6 +239,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user and invalidate refresh token' })
   @UseGuards(AtJwtAuthGuard)
   @Post('logout')
+  @Authenticated()
   async logout(
     @Req() req: RequestWithAt,
     @Res({ passthrough: true }) res: Response,
